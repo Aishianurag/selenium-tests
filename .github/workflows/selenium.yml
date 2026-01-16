@@ -30,7 +30,7 @@ jobs:
 
       - name: Run Selenium Tests
         run: |
-          pytest tests/ --html=report.html
+          pytest my_tests/ --html=report.html
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
