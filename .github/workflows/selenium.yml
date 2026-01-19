@@ -30,7 +30,7 @@ jobs:
 
       - name: Run Selenium Tests
         run: |
-          pytest tests/ --html=report.html
+          C:/Users/cloud/OneDrive/Documents/ --html=report.html
 
       - name: Upload Test Report and Screenshots
         uses: actions/upload-artifact@v4
