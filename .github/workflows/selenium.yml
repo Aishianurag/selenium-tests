@@ -38,8 +38,8 @@ jobs:
           name: selenium-report
           path: |
             report.html
-<<<<<<< HEAD
+            
             screenshots
-=======
+
             screenshots
->>>>>>> 0b2cd50 (Add Selenium GitHub Actions workflow)
+
