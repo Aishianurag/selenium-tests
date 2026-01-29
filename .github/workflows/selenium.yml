@@ -1,45 +1,31 @@
-name: Selenium Tests
+name: Selenium Login Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
-  test:
+  login-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Install dependencies
         run: |
-          pip install selenium pytest pytest-html
+          pip install selenium webdriver-manager
 
-      - name: Install Chrome
+      - name: Run Login Test
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
-      - name: Run Selenium Tests
-        run: |
-          pytest tests/ --html=report.html
-
-      - name: Upload Test Report and Screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: selenium-report
-          path: |
-            report.html
-<<<<<<< HEAD
-            screenshots
-=======
-            screenshots
->>>>>>> 0b2cd50 (Add Selenium GitHub Actions workflow)
+          python "selenium test(product)/test_login.py"
