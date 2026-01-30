@@ -5,7 +5,7 @@ from pages.login_page import LoginPage
 @pytest.fixture
 def setup():
     driver = webdriver.Chrome()
-    driver.get("http://136.115.237.98:3000/login")
+    driver.get("url")
     yield driver
     driver.quit()
 
