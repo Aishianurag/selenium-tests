@@ -28,14 +28,15 @@ from selenium import webdriver
 try:
     APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
     driver.get(APP_URL)
+    driver.get(your url)
 
     home = HomePage(driver)
     home.click_sign_in()
 
     login = LoginPage(driver)
-    login.enter_email("mohit12@gmail.com")
+    login.enter_email(email)
     login.click_with_password()
-    login.enter_password("mohit12")
+    login.enter_password(password)
     login.click_submit()
 
     dashboard = DashboardPage(driver)

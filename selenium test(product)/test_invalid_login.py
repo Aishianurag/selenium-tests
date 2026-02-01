@@ -23,15 +23,15 @@ def run_invalid_login_test():
     wait = WebDriverWait(driver, 40)
 
     print("Opening HOME page...")
-    driver.get("http://136.115.237.98:3000/")
+    driver.get("url")
 
     login = LoginPage(driver)
 
     print("Opening login modal...")
     login.open_login_modal()
 
-    login.enter_username("mohit12@gmail.com")
-    login.enter_password("wrongpassword")
+    login.enter_username("email")
+    login.enter_password("password")
     login.click_login()
 
     print("Submitted invalid credentials")
