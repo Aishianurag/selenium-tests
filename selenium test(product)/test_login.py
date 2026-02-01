@@ -23,7 +23,11 @@ options.add_argument("--disable-dev-shm-usage")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
+import os
+from selenium import webdriver
 try:
+    APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
+    driver.get(APP_URL)
     driver.get(your url)
 
     home = HomePage(driver)

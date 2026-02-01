@@ -1,0 +1,33 @@
+name: Selenium Login Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  login-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install Python dependencies
+        run: |
+          pip install selenium webdriver-manager
+
+      - name: Run Selenium Login Test
+        env:
+          APP_URL: http://136.115.237.98:3000
+        run: |
+          python "selenium test(product)/test_login.py"
