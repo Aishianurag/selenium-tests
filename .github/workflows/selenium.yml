@@ -22,10 +22,12 @@ jobs:
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           pip install selenium webdriver-manager
 
-      - name: Run Login Test
+      - name: Run Selenium Login Test
+        env:
+          APP_URL: http://136.115.237.98:3000
         run: |
           python "selenium test(product)/test_login.py"
