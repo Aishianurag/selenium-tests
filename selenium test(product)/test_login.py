@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -9,8 +10,10 @@ from pages.dashboard_page import DashboardPage
 
 print("LOGIN TEST STARTED")
 
+# -------------------------------
+# Chrome setup (local + CI safe)
+# -------------------------------
 options = Options()
-import os
 
 if os.name == "nt":   # Only for Windows (your laptop)
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
@@ -23,20 +26,23 @@ options.add_argument("--disable-dev-shm-usage")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-import os
-from selenium import webdriver
 try:
+    # -------------------------------
+    # App URL (CI + Local)
+    # -------------------------------
     APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
     driver.get(APP_URL)
-    driver.get(your url)
 
+    # -------------------------------
+    # Run login flow
+    # -------------------------------
     home = HomePage(driver)
     home.click_sign_in()
 
     login = LoginPage(driver)
-    login.enter_email(email)
+    login.enter_email(os.getenv("TEST_EMAIL"))
     login.click_with_password()
-    login.enter_password(password)
+    login.enter_password(os.getenv("TEST_PASSWORD"))
     login.click_submit()
 
     dashboard = DashboardPage(driver)
