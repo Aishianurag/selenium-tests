@@ -1,39 +1,76 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-class HomePage:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 40)
-
-    def click_sign_in(self):
-        # 1. Wait for the page shell to load
-        self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-
-        # 2. Wait until ANY clickable element that looks like Sign / Login appears
-        sign_in = self.wait.until(
-            EC.any_of(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//a[contains(translate(., 'SIGNLOGIN', 'signlogin'), 'sign')]")
-                ),
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//a[contains(translate(., 'SIGNLOGIN', 'signlogin'), 'login')]")
-                ),
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(translate(., 'SIGNLOGIN', 'signlogin'), 'sign')]")
-                ),
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(translate(., 'SIGNLOGIN', 'signlogin'), 'login')]")
-                )
-            )
-        )
-
-        sign_in.click()
-
-        # 3. Wait until the login form or input fields appear
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//input | //form")
-            )
-        )
+import os
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+ 
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+from pages.dashboard_page import DashboardPage
+ 
+ 
+print("LOGIN TEST STARTED")
+ 
+# -------------------------------
+# Load environment variables
+# -------------------------------
+APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
+TEST_EMAIL = os.getenv("TEST_EMAIL")
+TEST_PASSWORD = os.getenv("TEST_PASSWORD")
+ 
+if not TEST_EMAIL or not TEST_PASSWORD:
+    raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
+ 
+print(f"Testing URL: {APP_URL}")
+print("Credentials loaded successfully")
+ 
+# -------------------------------
+# Chrome setup (CI safe)
+# -------------------------------
+options = Options()
+options.add_argument("--headless=new")
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-gpu")
+options.add_argument("--start-maximized")
+ 
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=options)
+ 
+driver.set_page_load_timeout(60)
+ 
+try:
+    # -------------------------------
+    # Open application
+    # -------------------------------
+    driver.get(APP_URL)
+ 
+    # -------------------------------
+    # Home → Login
+    # -------------------------------
+    home = HomePage(driver)
+    home.click_sign_in()
+ 
+    login = LoginPage(driver)
+    login.enter_email(TEST_EMAIL)
+    login.click_with_password()
+    login.enter_password(TEST_PASSWORD)
+    login.click_submit()
+ 
+    # -------------------------------
+    # Verify dashboard
+    # -------------------------------
+    dashboard = DashboardPage(driver)
+    dashboard.verify_login_success()
+ 
+    print("LOGIN SUCCESSFUL ✅")
+ 
+except Exception as e:
+    # 📸 Save screenshot for CI debugging
+    driver.save_screenshot("login_failure.png")
+    print("❌ LOGIN FAILED — Screenshot saved as login_failure.png")
+    raise e
+ 
+finally:
+    driver.quit()
