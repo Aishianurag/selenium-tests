@@ -86,7 +86,15 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: |
           python "selenium test(product)/test_login.py"
-
+      
+      - name: Upload Selenium Debug Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-debug
+          path: |
+            home_page_failure.png
+            home_page_source.html
       # ------------------------------
       # 7. Remove Runner IP from Firewall (Always)
       # ------------------------------
