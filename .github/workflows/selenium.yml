@@ -37,6 +37,7 @@ jobs:
 
       - name: Run Selenium Login Test
         env:
-          APP_URL: http://136.115.237.98:3000
+          APP_URL: ${{ secrets.APP_URL }}
         run: |
           python "selenium test(product)/test_login.py"
+
