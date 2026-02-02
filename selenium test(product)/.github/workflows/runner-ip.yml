@@ -11,4 +11,3 @@ jobs:
         run: |
           echo "GitHub Runner Public IP:"
           curl -s https://api.ipify.org
-          
