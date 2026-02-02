@@ -1,76 +1,65 @@
-import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
- 
-from pages.home_page import HomePage
-from pages.login_page import LoginPage
-from pages.dashboard_page import DashboardPage
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
  
  
-print("LOGIN TEST STARTED")
+class HomePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 45)
  
-# -------------------------------
-# Load environment variables
-# -------------------------------
-APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
-TEST_EMAIL = os.getenv("TEST_EMAIL")
-TEST_PASSWORD = os.getenv("TEST_PASSWORD")
+    def click_sign_in(self):
+        try:
+            # 1️⃣ Wait until ANY DOM content appears (CI-safe)
+            self.wait.until(
+                EC.presence_of_element_located((By.XPATH, "//*"))
+            )
  
-if not TEST_EMAIL or not TEST_PASSWORD:
-    raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
+            # 2️⃣ Try to find Sign In / Login button or link
+            sign_in = self.wait.until(
+                EC.any_of(
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+                    ))
+                )
+            )
  
-print(f"Testing URL: {APP_URL}")
-print("Credentials loaded successfully")
+            # 3️⃣ Scroll + JS click (headless Chrome fix)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center'});", sign_in
+            )
+            self.driver.execute_script("arguments[0].click();", sign_in)
  
-# -------------------------------
-# Chrome setup (CI safe)
-# -------------------------------
-options = Options()
-options.add_argument("--headless=new")
-options.add_argument("--window-size=1920,1080")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-gpu")
-options.add_argument("--start-maximized")
+            # 4️⃣ Confirm login page loaded (email field or form)
+            self.wait.until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    "//input[@type='email'] | //form"
+                ))
+            )
  
-service = Service(ChromeDriverManager().install())
-driver = webdriver.Chrome(service=service, options=options)
+        except TimeoutException:
+            # 🔴 CI debugging (ABSOLUTELY NECESSARY)
+            self.driver.save_screenshot("home_page_failure.png")
  
-driver.set_page_load_timeout(60)
+            with open("home_page_source.html", "w", encoding="utf-8") as f:
+                f.write(self.driver.page_source)
  
-try:
-    # -------------------------------
-    # Open application
-    # -------------------------------
-    driver.get(APP_URL)
- 
-    # -------------------------------
-    # Home → Login
-    # -------------------------------
-    home = HomePage(driver)
-    home.click_sign_in()
- 
-    login = LoginPage(driver)
-    login.enter_email(TEST_EMAIL)
-    login.click_with_password()
-    login.enter_password(TEST_PASSWORD)
-    login.click_submit()
- 
-    # -------------------------------
-    # Verify dashboard
-    # -------------------------------
-    dashboard = DashboardPage(driver)
-    dashboard.verify_login_success()
- 
-    print("LOGIN SUCCESSFUL ✅")
- 
-except Exception as e:
-    # 📸 Save screenshot for CI debugging
-    driver.save_screenshot("login_failure.png")
-    print("❌ LOGIN FAILED — Screenshot saved as login_failure.png")
-    raise e
- 
-finally:
-    driver.quit()
+            raise TimeoutException(
+                "Home page Sign/Login button not found. "
+                "Screenshot + HTML dumped for debugging."
+            )
