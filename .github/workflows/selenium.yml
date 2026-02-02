@@ -2,27 +2,54 @@ name: Selenium Login Test
 
 on:
   push:
-    branches: feature/selenium-login-ci
-  # pull_request:
-  #   branches: [main]
+    branches:
+      - feature/selenium-login-ci
 
 jobs:
   login-test:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ------------------------------
+      # 1. Checkout Repository
+      # ------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print GitHub Runner IP
+      # ------------------------------
+      # 2. Get GitHub Runner Public IP
+      # ------------------------------
+      - name: Get GitHub Runner IP
         run: |
-          echo "=============================="
-          echo "GITHUB RUNNER PUBLIC IP BELOW"
-          echo "=============================="
-          curl -s https://api.ipify.org
-          echo ""
-          echo "=============================="
+          IP=$(curl -s https://api.ipify.org)
+          echo "RUNNER_IP=$IP" >> $GITHUB_ENV
+          echo "GitHub Runner IP: $IP"
 
+      # ------------------------------
+      # 3. Authenticate to GCP
+      # ------------------------------
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set GCP Project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      # ------------------------------
+      # 4. Add Runner IP to Firewall
+      # ------------------------------
+      - name: Add GitHub Runner IP to Firewall
+        run: |
+          echo "Allowing ${RUNNER_IP} in firewall"
+          gcloud compute firewall-rules update allow-github-runner-3000 \
+            --source-ranges=${RUNNER_IP}/32
+
+      # ------------------------------
+      # 5. Setup Selenium Environment
+      # ------------------------------
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -35,9 +62,21 @@ jobs:
         run: |
           pip install selenium webdriver-manager
 
-      - name: Run Selenium Login Test
+      # ------------------------------
+      # 6. Run Selenium Login Test
+      # ------------------------------
+      - name: Run Login Test
         env:
           APP_URL: ${{ secrets.APP_URL }}
         run: |
           python "selenium test(product)/test_login.py"
 
+      # ------------------------------
+      # 7. Remove Runner IP from Firewall (Always)
+      # ------------------------------
+      - name: Remove GitHub Runner IP from Firewall
+        if: always()
+        run: |
+          echo "Removing ${RUNNER_IP} from firewall"
+          gcloud compute firewall-rules update allow-github-runner-3000 \
+            --source-ranges=""
