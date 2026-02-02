@@ -44,7 +44,7 @@ jobs:
       - name: Add GitHub Runner IP to Firewall
         run: |
           echo "Allowing ${RUNNER_IP} in firewall"
-          gcloud compute firewall-rules update allow-github-runner-3000 \
+          gcloud compute firewall-rules update selenium-test-firewall \
             --source-ranges=${RUNNER_IP}/32
 
       # ------------------------------
