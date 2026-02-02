@@ -74,6 +74,11 @@ jobs:
       # ------------------------------
       # 6. Run Selenium Login Test
       # ------------------------------
+      - name: Debug App URL
+        run: |
+          echo "APP_URL is: ${{ secrets.APP_URL }}"
+
+      
       - name: Run Login Test
         env:
           APP_URL: ${{ secrets.APP_URL }}
