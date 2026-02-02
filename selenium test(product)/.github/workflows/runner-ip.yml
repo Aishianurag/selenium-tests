@@ -1,0 +1,13 @@
+name: Show GitHub Runner IP
+
+on:
+  workflow_dispatch:   # manual run button
+
+jobs:
+  show-ip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print runner IP
+        run: |
+          echo "GitHub Runner Public IP:"
+          curl -s https://api.ipify.org
