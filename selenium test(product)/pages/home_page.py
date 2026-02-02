@@ -1,76 +1,179 @@
-import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
- 
-from pages.home_page import HomePage
-from pages.login_page import LoginPage
-from pages.dashboard_page import DashboardPage
- 
- 
-print("LOGIN TEST STARTED")
- 
-# -------------------------------
-# Load environment variables
-# -------------------------------
-APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
-TEST_EMAIL = os.getenv("TEST_EMAIL")
-TEST_PASSWORD = os.getenv("TEST_PASSWORD")
- 
-if not TEST_EMAIL or not TEST_PASSWORD:
-    raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
- 
-print(f"Testing URL: {APP_URL}")
-print("Credentials loaded successfully")
- 
-# -------------------------------
-# Chrome setup (CI safe)
-# -------------------------------
-options = Options()
-options.add_argument("--headless=new")
-options.add_argument("--window-size=1920,1080")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-gpu")
-options.add_argument("--start-maximized")
- 
-service = Service(ChromeDriverManager().install())
-driver = webdriver.Chrome(service=service, options=options)
- 
-driver.set_page_load_timeout(60)
- 
+from selenium.webdriver.common.by import By
+
+from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.webdriver.support import expected_conditions as EC
+
+from selenium.common.exceptions import TimeoutException
+
+
+class HomePage:
+
+def __init__(self, driver):
+
+self.driver = driver
+
+self.wait = WebDriverWait(driver, 40)
+
+def click_sign_in(self):
+
 try:
-    # -------------------------------
-    # Open application
-    # -------------------------------
-    driver.get(APP_URL)
+
+# 1️⃣ Wait until ANY element is rendered (do NOT rely on readyState in CI)
+
+self.wait.until(
+
+EC.presence_of_element_located((By.XPATH, "//*"))
+
+)
+
+# 2️⃣ Extra small sleep handled implicitly by wait polling
+
+# Now look for any clickable Sign/Login element
+
+sign_in = self.wait.until(
+
+EC.any_of(
+
+EC.element_to_be_clickable((
+
+    By.XPATH,
+
+    "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+
+)),
+
+EC.element_to_be_clickable((
+
+    By.XPATH,
+
+    "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+
+)),
+
+EC.element_to_be_clickable((
+
+    By.XPATH,
+
+    "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+
+)),
+
+EC.element_to_be_clickable((
+
+    By.XPATH,
+
+    "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+
+))
+
+)
+
+)
+
+# 3️⃣ Scroll + JS click (headless-safe)
+
+self.driver.execute_script(
+
+"arguments[0].scrollIntoView({block:'center'});", sign_in
+
+)
+
+self.driver.execute_script("arguments[0].click();", sign_in)
+
+# 4️⃣ Confirm login page transition
+
+self.wait.until(
+
+EC.presence_of_element_located((
+
+By.XPATH,
+
+"//input[@type='email'] | //form"
+
+))from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
  
-    # -------------------------------
-    # Home → Login
-    # -------------------------------
-    home = HomePage(driver)
-    home.click_sign_in()
  
-    login = LoginPage(driver)
-    login.enter_email(TEST_EMAIL)
-    login.click_with_password()
-    login.enter_password(TEST_PASSWORD)
-    login.click_submit()
+class HomePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 45)
  
-    # -------------------------------
-    # Verify dashboard
-    # -------------------------------
-    dashboard = DashboardPage(driver)
-    dashboard.verify_login_success()
+    def click_sign_in(self):
+        try:
+            # 1️⃣ Wait until ANY DOM content appears (CI-safe)
+            self.wait.until(
+                EC.presence_of_element_located((By.XPATH, "//*"))
+            )
  
-    print("LOGIN SUCCESSFUL ✅")
+            # 2️⃣ Try to find Sign In / Login button or link
+            sign_in = self.wait.until(
+                EC.any_of(
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//button[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'sign')]"
+                    )),
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        "//a[contains(translate(.,'SIGNLOGIN','signlogin'),'login')]"
+                    ))
+                )
+            )
  
-except Exception as e:
-    # 📸 Save screenshot for CI debugging
-    driver.save_screenshot("login_failure.png")
-    print("❌ LOGIN FAILED — Screenshot saved as login_failure.png")
-    raise e
+            # 3️⃣ Scroll + JS click (headless Chrome fix)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center'});", sign_in
+            )
+            self.driver.execute_script("arguments[0].click();", sign_in)
  
-finally:
-    driver.quit()
+            # 4️⃣ Confirm login page loaded (email field or form)
+            self.wait.until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    "//input[@type='email'] | //form"
+                ))
+            )
+ 
+        except TimeoutException:
+            # 🔴 CI debugging (ABSOLUTELY NECESSARY)
+            self.driver.save_screenshot("home_page_failure.png")
+ 
+            with open("home_page_source.html", "w", encoding="utf-8") as f:
+                f.write(self.driver.page_source)
+ 
+            raise TimeoutException(
+                "Home page Sign/Login button not found. "
+                "Screenshot + HTML dumped for debugging."
+            )
+
+)
+
+except TimeoutException:
+
+# 🔴 HARD DEBUG — this will END the guessing forever
+
+self.driver.save_screenshot("home_page_failure.png")
+
+with open("home_page_source.html", "w", encoding="utf-8") as f:
+
+f.write(self.driver.page_source)
+
+raise TimeoutException(
+
+"❌ Home page did not load Sign/Login button. "
+
+"Screenshot + HTML dumped for analysis."
+
+)
+
