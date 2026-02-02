@@ -11,11 +11,24 @@ from pages.dashboard_page import DashboardPage
 print("LOGIN TEST STARTED")
 
 # -------------------------------
-# Chrome setup (local + CI safe)
+# Load & validate environment variables
+# -------------------------------
+APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
+TEST_EMAIL = os.getenv("TEST_EMAIL")
+TEST_PASSWORD = os.getenv("TEST_PASSWORD")
+
+if not TEST_EMAIL or not TEST_PASSWORD:
+    raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
+
+print(f"Testing URL: {APP_URL}")
+print("Credentials loaded successfully")
+
+# -------------------------------
+# Chrome setup (Local + CI safe)
 # -------------------------------
 options = Options()
 
-if os.name == "nt":   # Only for Windows (your laptop)
+if os.name == "nt":   # Only for Windows (local laptop)
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 options.add_argument("--headless=new")
@@ -28,9 +41,8 @@ driver = webdriver.Chrome(service=service, options=options)
 
 try:
     # -------------------------------
-    # App URL (CI + Local)
+    # Open application
     # -------------------------------
-    APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
     driver.get(APP_URL)
 
     # -------------------------------
@@ -40,11 +52,14 @@ try:
     home.click_sign_in()
 
     login = LoginPage(driver)
-    login.enter_email(os.getenv("TEST_EMAIL"))
+    login.enter_email(TEST_EMAIL)
     login.click_with_password()
-    login.enter_password(os.getenv("TEST_PASSWORD"))
+    login.enter_password(TEST_PASSWORD)
     login.click_submit()
 
+    # -------------------------------
+    # Verify dashboard
+    # -------------------------------
     dashboard = DashboardPage(driver)
     dashboard.verify_login_success()
 
