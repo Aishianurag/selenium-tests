@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -9,10 +10,25 @@ from pages.dashboard_page import DashboardPage
 
 print("LOGIN TEST STARTED")
 
-options = Options()
-import os
+# -------------------------------
+# Validate required env variables
+# -------------------------------
+APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
+TEST_EMAIL = os.getenv("TEST_EMAIL")
+TEST_PASSWORD = os.getenv("TEST_PASSWORD")
 
-if os.name == "nt":   # Only for Windows (your laptop)
+if not TEST_EMAIL or not TEST_PASSWORD:
+    raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
+
+print(f"Testing URL: {APP_URL}")
+print("Credentials loaded successfully")
+
+# -------------------------------
+# Chrome setup (Local + CI safe)
+# -------------------------------
+options = Options()
+
+if os.name == "nt":   # Only for Windows (local laptop)
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 options.add_argument("--headless=new")
@@ -23,22 +39,27 @@ options.add_argument("--disable-dev-shm-usage")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-import os
-from selenium import webdriver
 try:
-    APP_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
+    # -------------------------------
+    # Open application
+    # -------------------------------    
     driver.get(APP_URL)
-    driver.get(your url)
 
+    # -------------------------------
+    # Run login flow
+    # -------------------------------
     home = HomePage(driver)
     home.click_sign_in()
 
     login = LoginPage(driver)
-    login.enter_email(email)
+    login.enter_email(TEST_EMAIL)
     login.click_with_password()
-    login.enter_password(password)
+    login.enter_password(TEST_PASSWORD)
     login.click_submit()
 
+    # -------------------------------
+    # Verify dashboard
+    # -------------------------------
     dashboard = DashboardPage(driver)
     dashboard.verify_login_success()
 
