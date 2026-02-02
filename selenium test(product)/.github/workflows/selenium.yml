@@ -14,6 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Show GitHub Runner IP
+        run: |
+          echo "GitHub Runner Public IP:"
+          curl https://api.ipify.org
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
