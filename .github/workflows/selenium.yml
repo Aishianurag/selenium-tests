@@ -109,13 +109,13 @@ jobs:
       # ------------------------------
       # 8. Remove Firewall Rule (Always)
       # ------------------------------
-      - name: Remove GitHub Runner Firewall
-        if: always()
-        run: |
-          echo "Cleaning up firewall rule..."
+      #- name: Remove GitHub Runner Firewall
+        #if: always()
+        #run: |
+          #echo "Cleaning up firewall rule..."
 
-          if gcloud compute firewall-rules describe selenium-test-firewall > /dev/null 2>&1; then
-            gcloud compute firewall-rules delete selenium-test-firewall --quiet
-          else
-            echo "Firewall rule already removed"
-          fi
+          #if gcloud compute firewall-rules describe selenium-test-firewall > /dev/null 2>&1; then
+           # gcloud compute firewall-rules delete selenium-test-firewall --quiet
+          #else
+            #echo "Firewall rule already removed"
+          #fi
