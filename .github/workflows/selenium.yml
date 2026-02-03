@@ -92,6 +92,7 @@ jobs:
           TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: |
+          curl -vvv "${APP_URL}"
           python "selenium test(product)/test_login.py"
 
       # ------------------------------
