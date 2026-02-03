@@ -39,22 +39,30 @@ jobs:
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
       # ------------------------------
-      # 4. Add Runner IP to Firewall
+      # 4. Create or Update Firewall Rule Safely
       # ------------------------------
-      - name: Create & Allow GitHub Runner in Firewall
+      - name: Create or Update Firewall for GitHub Runner
         run: |
-          echo "Creating selenium-test-firewall and allowing ${RUNNER_IP}"
-      
-          gcloud compute firewall-rules create selenium-test-firewall \
-            --direction=INGRESS \
-            --priority=1000 \
-            --network=default \
-            --action=ALLOW \
-            --rules=tcp:3000 \
-            --source-ranges=${RUNNER_IP}/32 \
-            --description="GitHub Selenium temporary access" \
-            --quiet || true
+          echo "Checking if selenium-test-firewall exists..."
 
+          if gcloud compute firewall-rules describe selenium-test-firewall > /dev/null 2>&1; then
+            echo "Firewall exists. Updating source range to ${RUNNER_IP}"
+
+            gcloud compute firewall-rules update selenium-test-firewall \
+              --source-ranges="${RUNNER_IP}/32"
+
+          else
+            echo "Firewall does not exist. Creating it..."
+
+            gcloud compute firewall-rules create selenium-test-firewall \
+              --direction=INGRESS \
+              --priority=1000 \
+              --network=default \
+              --action=ALLOW \
+              --rules=tcp:3000 \
+              --source-ranges="${RUNNER_IP}/32" \
+              --description="GitHub Selenium temporary access"
+          fi
 
       # ------------------------------
       # 5. Setup Selenium Environment
@@ -78,7 +86,6 @@ jobs:
         run: |
           echo "APP_URL is: ${{ secrets.APP_URL }}"
 
-      
       - name: Run Login Test
         env:
           APP_URL: ${{ secrets.APP_URL }}
@@ -86,7 +93,10 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: |
           python "selenium test(product)/test_login.py"
-      
+
+      # ------------------------------
+      # 7. Upload Debug Artifacts (on failure)
+      # ------------------------------
       - name: Upload Selenium Debug Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -95,11 +105,17 @@ jobs:
           path: |
             home_page_failure.png
             home_page_source.html
+
       # ------------------------------
-      # 7. Remove Runner IP from Firewall (Always)
+      # 8. Remove Firewall Rule (Always)
       # ------------------------------
-      - name: Remove GitHub Runner IP from Firewall
+      - name: Remove GitHub Runner Firewall
         if: always()
         run: |
-          gcloud compute firewall-rules update selenium-test-firewall \
-            --source-ranges=""
+          echo "Cleaning up firewall rule..."
+
+          if gcloud compute firewall-rules describe selenium-test-firewall > /dev/null 2>&1; then
+            gcloud compute firewall-rules delete selenium-test-firewall --quiet
+          else
+            echo "Firewall rule already removed"
+          fi
