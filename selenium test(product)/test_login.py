@@ -14,8 +14,8 @@ print("LOGIN TEST STARTED")
 # Load environment variables
 # -------------------------------
 BASE_URL = "http://136.115.237.98:3000/#/Signin"
-#APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
-#LOGIN_URL = APP_URL
+APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
+LOGIN_URL = APP_URL
 
 TEST_EMAIL = os.getenv("TEST_EMAIL")
 TEST_PASSWORD = os.getenv("TEST_PASSWORD")
@@ -24,8 +24,8 @@ if not TEST_EMAIL or not TEST_PASSWORD:
     raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
 
 print(f"Testing BASE URL: {BASE_URL}")
-#print(f"Testing APP URL: {APP_URL}")
-#print(f"Testing LOGIN URL: {LOGIN_URL}")
+print(f"Testing APP URL: {APP_URL}")
+print(f"Testing LOGIN URL: {LOGIN_URL}")
 print("Credentials loaded successfully")
 
 # -------------------------------
