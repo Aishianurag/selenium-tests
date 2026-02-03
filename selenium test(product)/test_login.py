@@ -24,8 +24,8 @@ if not TEST_EMAIL or not TEST_PASSWORD:
     raise Exception("❌ TEST_EMAIL or TEST_PASSWORD not found in environment variables")
 
 print(f"Testing BASE URL: {BASE_URL}")
-print(f"Testing APP URL: {APP_URL}")
-print(f"Testing LOGIN URL: {LOGIN_URL}")
+#print(f"Testing APP URL: {APP_URL}")
+#print(f"Testing LOGIN URL: {LOGIN_URL}")
 print("Credentials loaded successfully")
 
 # -------------------------------
