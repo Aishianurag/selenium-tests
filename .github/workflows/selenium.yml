@@ -62,6 +62,15 @@ jobs:
               --rules=tcp:3000 \
               --source-ranges="${RUNNER_IP}/32" \
               --description="GitHub Selenium temporary access"
+
+            gcloud compute firewall-rules create selenium-test-firewall \
+              --direction=INGRESS \
+              --priority=1000 \
+              --network=ctmcops-dev-vpc \
+              --action=ALLOW \
+              --rules=tcp:8004 \
+              --source-ranges="${RUNNER_IP}/32" \
+              --description="GitHub Selenium temporary access"
           fi
 
       # ------------------------------
