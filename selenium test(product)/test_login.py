@@ -13,9 +13,9 @@ print("LOGIN TEST STARTED")
 # -------------------------------
 # Load environment variables
 # -------------------------------
-BASE_URL = "http://136.115.237.98:3000"
-APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
-LOGIN_URL = APP_URL
+BASE_URL = "http://136.115.237.98:3000/#/Signin"
+#APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
+#LOGIN_URL = APP_URL
 
 TEST_EMAIL = os.getenv("TEST_EMAIL")
 TEST_PASSWORD = os.getenv("TEST_PASSWORD")
@@ -49,7 +49,7 @@ try:
     # -------------------------------
     # Open REAL React Login Page
     # -------------------------------
-    driver.get(LOGIN_URL)
+    driver.get(BASE_URL)
 
     # -------------------------------
     # Login
