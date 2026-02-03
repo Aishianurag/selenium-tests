@@ -13,9 +13,9 @@ print("LOGIN TEST STARTED")
 # -------------------------------
 # Load environment variables
 # -------------------------------
-BASE_URL = os.getenv("APP_URL", "http://136.115.237.98:3000")
-APP_URL = BASE_URL.rstrip("/") + "/cloudtechner-dashboard"
-LOGIN_URL = APP_URL + "/login"
+BASE_URL = "http://136.115.237.98:3000"
+APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
+LOGIN_URL = APP_URL
 
 TEST_EMAIL = os.getenv("TEST_EMAIL")
 TEST_PASSWORD = os.getenv("TEST_PASSWORD")
