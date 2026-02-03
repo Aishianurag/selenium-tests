@@ -63,7 +63,20 @@ jobs:
               --source-ranges="${RUNNER_IP}/32" \
               --description="GitHub Selenium temporary access"
 
-            gcloud compute firewall-rules create selenium-test-firewall \
+          
+          fi
+
+          if gcloud compute firewall-rules describe selenium-api-firewall > /dev/null 2>&1; then
+            echo "Firewall exists. Updating source range to ${RUNNER_IP}"
+
+            gcloud compute firewall-rules update selenium-api-firewall \
+              --source-ranges="${RUNNER_IP}/32"
+
+          else
+            echo "Firewall does not exist. Creating it..."
+
+
+            gcloud compute firewall-rules create selenium-api-firewall \
               --direction=INGRESS \
               --priority=1000 \
               --network=ctmcops-dev-vpc \
