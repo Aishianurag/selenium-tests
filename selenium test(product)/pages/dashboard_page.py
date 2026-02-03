@@ -8,7 +8,7 @@ class DashboardPage:
         self.wait = WebDriverWait(driver, 40)
 
     def verify_login_success(self):
-        # Wait until URL changes away from /login
+        # Wait until URL changes away from login page
         self.wait.until(lambda d: "/login" not in d.current_url)
 
         # Wait until something that only exists after login appears
