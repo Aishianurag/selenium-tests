@@ -13,7 +13,7 @@ print("LOGIN TEST STARTED")
 # -------------------------------
 # Load environment variables
 # -------------------------------
-BASE_URL = "http://136.115.237.98:3000/#/Signin"
+BASE_URL = "http://136.115.237.98:3000"
 APP_URL = BASE_URL.rstrip("/") + "/#/Signin"
 LOGIN_URL = APP_URL
 
