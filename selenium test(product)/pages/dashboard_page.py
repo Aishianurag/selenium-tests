@@ -11,7 +11,7 @@ class DashboardPage:
         # Wait until URL changes away from login page
         self.wait.until(lambda d: "/login" not in d.current_url)
 
-        # Wait until something that only exists after login appears
+        # Wait until dashboard shell appears
         self.wait.until(
             EC.any_of(
                 EC.presence_of_element_located((By.XPATH, "//nav")),
