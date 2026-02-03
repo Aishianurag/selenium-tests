@@ -115,6 +115,7 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: |
           curl -vvv "${APP_URL}"
+          curl -vvv "http://34.47.214.175:8004/
           python "selenium test(product)/test_login.py"
 
       # ------------------------------
