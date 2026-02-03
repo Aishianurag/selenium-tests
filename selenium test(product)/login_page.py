@@ -5,34 +5,40 @@ from selenium.webdriver.support import expected_conditions as EC
 class LoginPage:
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 60)
+        self.wait = WebDriverWait(driver, 90)
+
+    def wait_for_react(self):
+        self.wait.until(lambda d: d.execute_script(
+            "return document.getElementById('root') && document.getElementById('root').children.length > 0"
+        ))
 
     def enter_email(self, email):
+        self.wait_for_react()
+
         email_field = self.wait.until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//input[@type='email' or contains(@placeholder,'Email')]")
-            )
+            EC.presence_of_element_located((
+                By.XPATH,
+                "//input[contains(@type,'email') or contains(@placeholder,'Email') or contains(@name,'email')]"
+            ))
         )
         email_field.clear()
         email_field.send_keys(email)
 
-    def click_with_password(self):
-        # Volt UI uses the same screen – no button needed
-        pass
+        # 🔥 THIS triggers the backend & shows password field
+        email_field.send_keys("\n")
 
     def enter_password(self, password):
         password_field = self.wait.until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//input[@type='password' or contains(@placeholder,'Password')]")
-            )
+            EC.presence_of_element_located((By.XPATH, "//input[@type='password']"))
         )
         password_field.clear()
         password_field.send_keys(password)
 
     def click_submit(self):
         submit = self.wait.until(
-            EC.element_to_be_clickable(
-                (By.XPATH, "//button[contains(., 'Sign') or contains(., 'Login')]")
-            )
+            EC.element_to_be_clickable((
+                By.XPATH,
+                "//button[contains(.,'Sign') or contains(.,'Login')]"
+            ))
         )
         submit.click()
