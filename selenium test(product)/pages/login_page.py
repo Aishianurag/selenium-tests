@@ -44,7 +44,7 @@ class LoginPage:
         submit = self.wait.until(
             EC.element_to_be_clickable((
                 By.XPATH,
-                "//button[contains(.,'Sign') or contains(.,'Login') or contains(.,'Continue')]"
+                "//button[contains(.,'Sign') or contains(.,'Login') or contains(.,'Submit')]"
             ))
         )
         submit.click()
